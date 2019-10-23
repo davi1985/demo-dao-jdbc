@@ -1,4 +1,4 @@
-## Demo Project with JDBC and DAO
+## Project Demo using JDBC and DAO
 
 JDBC (Java Database Connectivity) is the Java API that manages connecting to a database, issuing queries and commands, and handling result sets obtained from the database.
 
