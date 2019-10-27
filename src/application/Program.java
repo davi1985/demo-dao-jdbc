@@ -39,5 +39,11 @@ public class Program {
                 "Joelma Braga", "jhoy.joelma@gmail.com", new Date(), 4000.0, department);
         sellerDao.insert(newSeller);
         System.out.println("Inserted! New id = " + newSeller.getId());
+
+        System.out.println("\n=== Test 5: seller update ===");
+        seller = sellerDao.findById(1);
+        seller.setName("Davi Silva");
+        sellerDao.update(seller);
+        System.out.println("Update completed!");
     }
 }
