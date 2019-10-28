@@ -6,7 +6,10 @@ import model.dao.DeparmentDao;
 import model.entities.Department;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DepartmentDaoJDBC implements DeparmentDao {
 
@@ -21,9 +24,9 @@ public class DepartmentDaoJDBC implements DeparmentDao {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(
-              "INSERT INTO department "
-                    + "(Name) "
-                    + "VALUE (?)",
+                    "INSERT INTO department "
+                            + "(Name) "
+                            + "VALUE (?)",
                     Statement.RETURN_GENERATED_KEYS
             );
 
@@ -40,9 +43,9 @@ public class DepartmentDaoJDBC implements DeparmentDao {
             } else {
                 throw new DbException("Unexpected error! No rowns affected!");
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DbException(e.getMessage());
-        }finally {
+        } finally {
             DB.closeStatement(st);
         }
     }
@@ -53,8 +56,8 @@ public class DepartmentDaoJDBC implements DeparmentDao {
         try {
             st = conn.prepareStatement(
                     "UPDATE department "
-                    + " SET Name = ? "
-                    + "WHERE Id = ?"
+                            + " SET Name = ? "
+                            + "WHERE Id = ?"
             );
 
             st.setString(1, obj.getName());
@@ -62,9 +65,9 @@ public class DepartmentDaoJDBC implements DeparmentDao {
 
             st.executeUpdate();
 
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DbException(e.getMessage());
-        }finally {
+        } finally {
             DB.closeStatement(st);
         }
     }
@@ -74,7 +77,7 @@ public class DepartmentDaoJDBC implements DeparmentDao {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(
-                "DELETE FROM department WHERE Id = ?"
+                    "DELETE FROM department WHERE Id = ?"
             );
 
             st.setInt(1, id);
@@ -84,7 +87,7 @@ public class DepartmentDaoJDBC implements DeparmentDao {
                 throw new DbException("Id not found!");
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new DbException(e.getMessage());
         } finally {
             DB.closeStatement(st);
@@ -94,11 +97,65 @@ public class DepartmentDaoJDBC implements DeparmentDao {
 
     @Override
     public Department findById(Integer id) {
-        return null;
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement(
+                    "SELECT * FROM department " +
+                            "WHERE Id = ?"
+            );
+            st.setInt(1, id);
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                Department dep = instantiateDepartment(rs);
+
+                return dep;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
     }
 
     @Override
     public List<Department> findAll() {
-        return null;
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement(
+                    "SELECT * FROM department ORDER By Name"
+            );
+
+            rs = st.executeQuery();
+
+            List<Department> list = new ArrayList<>();
+            Map<Integer, Department> map = new HashMap<>();
+
+            while (rs.next()) {
+                Department dep = map.get(rs.getInt("Id"));
+                if (dep == null) {
+                    dep = instantiateDepartment(rs);
+                    map.put(rs.getInt("Id"), dep);
+                }
+                list.add(dep);
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
+    private Department instantiateDepartment(ResultSet rs) throws SQLException {
+        Department dep = new Department();
+        dep.setId(rs.getInt("Id"));
+        dep.setName(rs.getString("Name"));
+        return dep;
     }
 }
